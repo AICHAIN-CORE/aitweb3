@@ -2,7 +2,7 @@
 Package.describe({
   name: 'aichain:aitweb3',
   version: '0.19.0',
-  summary: 'Ethereum JavaScript API, middleware to talk to a ethreum node over RPC',
+  summary: 'AICHAIN JavaScript API, middleware to talk to a aichain node over RPC',
   git: 'https://github.com/AICHAIN-CORE/aitweb3',
   // By default, Meteor will default to using README.md for documentation.
   // To avoid submitting documentation, set this field to null.

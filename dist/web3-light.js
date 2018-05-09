@@ -1,4 +1,4 @@
-require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 module.exports=[
   {
     "constant": true,
@@ -927,6 +927,13 @@ var SolidityParam = require('./param');
  */
 var formatInputInt = function (value) {
     BigNumber.config(c.ETH_BIGNUMBER_ROUNDING_MODE);
+    if( (value[0] == 'a' && value[1]== 'i')
+        || (value[0] == 'a' && value[1]== 'I')
+        || (value[0] == 'A' && value[1]== 'i')
+        || (value[0] == 'A' && value[1]== 'I'))
+    {
+        value = '0x' + value.substr(2, value.length-2);
+    }
     var result = utils.padLeft(utils.toTwosComplement(value).toString(16), 64);
     return new SolidityParam(result);
 };
@@ -1120,7 +1127,7 @@ var formatOutputString = function (param) {
  */
 var formatOutputAddress = function (param) {
     var value = param.staticPart();
-    return "0x" + value.slice(value.length - 40, value.length);
+    return "ai" + value.slice(value.length - 40, value.length);
 };
 
 module.exports = {
@@ -2235,7 +2242,8 @@ var toTwosComplement = function (number) {
  * @return {Boolean}
 */
 var isStrictAddress = function (address) {
-    return /^0x[0-9a-f]{40}$/i.test(address);
+    address = address.toLowerCase();
+    return /^ai[0-9a-f]{40}$/i.test(address);
 };
 
 /**
@@ -2246,10 +2254,11 @@ var isStrictAddress = function (address) {
  * @return {Boolean}
 */
 var isAddress = function (address) {
-    if (!/^(0x)?[0-9a-f]{40}$/i.test(address)) {
+    address = address.toLowerCase();
+    if (!/^(ai)?[0-9a-f]{40}$/i.test(address)) {
         // check if it has the basic requirements of an address
         return false;
-    } else if (/^(0x)?[0-9a-f]{40}$/.test(address) || /^(0x)?[0-9A-F]{40}$/.test(address)) {
+    } else if (/^(ai)?[0-9a-f]{40}$/.test(address) || /^(AI)?[0-9A-F]{40}$/.test(address)) {
         // If it's all small caps or all all caps, return true
         return true;
     } else {
@@ -2267,7 +2276,8 @@ var isAddress = function (address) {
 */
 var isChecksumAddress = function (address) {
     // Check each case
-    address = address.replace('0x','');
+    address = address.toLowerCase();
+    address = address.replace('ai','');
     var addressHash = sha3(address.toLowerCase());
 
     for (var i = 0; i < 40; i++ ) {
@@ -2291,9 +2301,9 @@ var isChecksumAddress = function (address) {
 var toChecksumAddress = function (address) {
     if (typeof address === 'undefined') return '';
 
-    address = address.toLowerCase().replace('0x','');
+    address = address.toLowerCase().replace('ai','');
     var addressHash = sha3(address);
-    var checksumAddress = '0x';
+    var checksumAddress = 'ai';
 
     for (var i = 0; i < address.length; i++ ) {
         // If ith character is 9 to f then make it uppercase
@@ -2314,15 +2324,16 @@ var toChecksumAddress = function (address) {
  * @return {String} formatted address
  */
 var toAddress = function (address) {
+    address = address.toLowerCase();
     if (isStrictAddress(address)) {
         return address;
     }
 
     if (/^[0-9a-f]{40}$/.test(address)) {
-        return '0x' + address;
+        return 'ai' + address;
     }
 
-    return '0x' + padLeft(toHex(address).substr(2), 40);
+    return 'ai' + padLeft(toHex(address).substr(2), 40);
 };
 
 /**
@@ -2911,7 +2922,8 @@ var checkForContractAddress = function(contract, callback){
 
                 contract._eth.getTransactionReceipt(contract.transactionHash, function(e, receipt){
                     if(receipt && !callbackFired) {
-
+                        console.log("Contract getCode:\n");
+                        console.log(receipt.contractAddress);
                         contract._eth.getCode(receipt.contractAddress, function(e, code){
                             /*jshint maxcomplexity: 6 */
 
@@ -3909,13 +3921,14 @@ var outputPostFormatter = function(post){
 };
 
 var inputAddressFormatter = function (address) {
+    address = address.toLowerCase();
     var iban = new Iban(address);
     if (iban.isValid() && iban.isDirect()) {
-        return '0x' + iban.address();
+        return 'ai' + iban.address();
     } else if (utils.isStrictAddress(address)) {
         return address;
     } else if (utils.isAddress(address)) {
-        return '0x' + address;
+        return 'ai' + address;
     }
     throw new Error('invalid address');
 };
@@ -6051,8 +6064,8 @@ module.exports = {
 var globalRegistrarAbi = require('../contracts/GlobalRegistrar.json');
 var icapRegistrarAbi= require('../contracts/ICAPRegistrar.json');
 
-var globalNameregAddress = '0xc6d9d2cd449a754c494264e1809c50e34d64562b';
-var icapNameregAddress = '0xa1a111bc074c9cfa781f0c38e63bd51c91b8af00';
+var globalNameregAddress = 'aic6d9d2cd449a754c494264e1809c50e34d64562b';
+var icapNameregAddress = 'aia1a111bc074c9cfa781f0c38e63bd51c91b8af00';
 
 module.exports = {
     global: {
