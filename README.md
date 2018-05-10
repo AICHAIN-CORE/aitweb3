@@ -1,5 +1,5 @@
 Forked from Ethereum web3.js project.
-Change the address format rul as prefix: 'ai' instead of '0x'.
+Change the address format rule : need a prefix: 'ai' instead of '0x'.
 
 # AICHAIN JavaScript API
 You need to run a local AICHAIN node to use this library.
