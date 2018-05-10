@@ -1,7 +1,7 @@
 {
   "name": "aitweb3",
   "namespace": "aichain",
-  "version": "0.19.0",
+  "version": "0.19.1",
   "description": "AICHAIN JavaScript API, middleware to talk to a aichain node over RPC",
   "main": "./index.js",
   "directories": {
